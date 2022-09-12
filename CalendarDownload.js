@@ -1,9 +1,3 @@
-function test() {
-  const aliases = GmailApp.getAliases()
-  console.log(aliases)
-  console.log(aliases.filter((email) => email.includes('contact')))
-}
-
 /**
  * get all the events for the term from a calendar and write them to the "CalendarImport" sheet
  * @param {number} term number (1 - 4)

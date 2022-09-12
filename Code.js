@@ -54,11 +54,7 @@ function onOpen() {
         .addItem('Create Database from OnlineEnrolments', 'buildDB')
     )
     .addSeparator()
-    .addSubMenu(
-      ui.createMenu('Wordpress Actions').addItem('Create Course Program', 'makeCourseDetailForWordPress')
-      // .addItem('Create Enrolment Form', 'updateWordpressEnrolmentForm')
-      // .addItem('Import Enrolment Responses', 'makeEnrolmentCSV')
-    )
+    .addSubMenu(ui.createMenu('Wordpress Actions').addItem('Create Course Program', 'makeCourseDetailForWordPress'))
     .addSeparator()
     .addSubMenu(ui.createMenu('Other Actions').addItem('I&R Enrolment Sheet', 'selectedAttendanceRegister'))
     .addSeparator()
