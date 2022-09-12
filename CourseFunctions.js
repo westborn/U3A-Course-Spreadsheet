@@ -63,7 +63,7 @@ function print_attendance() {
 
   var pdfFile = makePDFfromRange(selectedRange, fileName, 'Attendance Sheets')
 
-  var recipientEmail = sheetToExport.getRange('O3').getDisplayValue()
+  var recipientEmail = sheetToExport.getRange('P3').getDisplayValue()
   const thisPresenter = getPresenter(sheetToExport.getRange('M3').getDisplayValue())
   const presenterEmail = thisPresenter ? thisPresenter.email : ''
   var recipient = recipientEmail === presenterEmail ? recipientEmail : `${recipientEmail}; ${presenterEmail}`
