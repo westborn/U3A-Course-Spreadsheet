@@ -1,3 +1,9 @@
+function test() {
+  const aliases = GmailApp.getAliases()
+  console.log(aliases)
+  console.log(aliases.filter((email) => email.includes('contact')))
+}
+
 /**
  * get all the events for the term from a calendar and write them to the "CalendarImport" sheet
  * @param {number} term number (1 - 4)
@@ -110,10 +116,10 @@ function retrieveCalendarEvents(calendarId, eventRequest) {
   const unpackEvent = (type, event) => {
     const courseEvent = {
       summary: event.summary.trim() || '',
-      description: event.description ? stripHTML(event.description) : '',
+      description: event.description ? wbLib.stripHTML(event.description) : '',
       location: event.location || '',
-      startDateTime: googleSheetDateTime(event.start.dateTime),
-      endDateTime: googleSheetDateTime(event.end.dateTime),
+      startDateTime: wbLib.googleSheetDateTime(event.start.dateTime),
+      endDateTime: wbLib.googleSheetDateTime(event.end.dateTime),
       duration: '',
       daysScheduled: '',
       datesScheduled: '',
@@ -124,8 +130,8 @@ function retrieveCalendarEvents(calendarId, eventRequest) {
       eventStartDateTime: event.start.dateTime,
       eventEndDateTime: event.end.dateTime,
     }
-    const duration = dateDiffMinutes(new Date(event.end.dateTime), new Date(event.start.dateTime))
-    courseEvent.duration = getTextTime(duration)
+    const duration = wbLib.dateDiffMinutes(new Date(event.end.dateTime), new Date(event.start.dateTime))
+    courseEvent.duration = wbLib.getTextTime(duration)
     courseEvent.presenter = decodePresenter(courseEvent.summary)
     courseEvent.contact = decodeContact(courseEvent.description)
 

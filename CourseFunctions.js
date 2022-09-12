@@ -9,7 +9,7 @@ function getPresenter(presenterName) {
     .getSheetByName('PresenterDetails')
     .getDataRange()
     .getValues()
-  const allPresenters = getJsonArrayFromData(presenterData)
+  const allPresenters = wbLib.getJsonArrayFromData(presenterData)
   return allPresenters.find((presenter) => presenter.name === presenterName)
 }
 /**
@@ -48,10 +48,13 @@ function print_attendance() {
   var rangeNameToPrint = 'print_area_attendance'
 
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
-  var myNamedRanges = listNamedRangesA1(spreadsheet)
+  var myNamedRanges = wbLib.listNamedRangesA1(spreadsheet)
   console.log(myNamedRanges)
   if (myNamedRanges[rangeNameToPrint] === 'undefined') {
-    showToast("No print area found. Please define one 'print_area_????' named range using Data > Named ranges.", 30)
+    wbLib.showToast(
+      "No print area found. Please define one 'print_area_????' named range using Data > Named ranges.",
+      30
+    )
     return
   }
   var selectedRange = spreadsheet.getRangeByName(myNamedRanges[rangeNameToPrint])
@@ -61,7 +64,7 @@ function print_attendance() {
   var courseTitle = sheetToExport.getRange('D8').getDisplayValue()
   var fileName = presenterName + '-' + courseTitle + '.pdf'
 
-  var pdfFile = makePDFfromRange(selectedRange, fileName, 'Attendance Sheets')
+  var pdfFile = wbLib.makePDFfromRange(selectedRange, fileName, 'Attendance Sheets')
 
   var recipientEmail = sheetToExport.getRange('P3').getDisplayValue()
   const thisPresenter = getPresenter(sheetToExport.getRange('M3').getDisplayValue())
@@ -90,9 +93,12 @@ function print_courseRegister() {
   var rangeNameToPrint = 'print_area_courseRegister'
 
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
-  var myNamedRanges = listNamedRangesA1(spreadsheet)
+  var myNamedRanges = wbLib.listNamedRangesA1(spreadsheet)
   if (myNamedRanges[rangeNameToPrint] === 'undefined') {
-    showToast("No print area found. Please define one 'print_area_????' named range using Data > Named ranges.", 30)
+    wbLib.showToast(
+      "No print area found. Please define one 'print_area_????' named range using Data > Named ranges.",
+      30
+    )
     return
   }
   var selectedRange = spreadsheet.getRangeByName(myNamedRanges[rangeNameToPrint])
@@ -100,7 +106,7 @@ function print_courseRegister() {
   var memberName = sheetToExport.getRange('K4').getDisplayValue()
   var fileName = memberName + ' - Enrolment Information.pdf'
 
-  var pdfFile = makePDFfromRange(selectedRange, fileName, 'Enrolment Information')
+  var pdfFile = wbLib.makePDFfromRange(selectedRange, fileName, 'Enrolment Information')
 
   var recipient = sheetToExport.getRange('K2').getDisplayValue()
   var subject = sheetToExport.getRange('K3').getDisplayValue()
@@ -125,7 +131,7 @@ function print_courseRegister() {
 function makeCourseDetailForWordPress() {
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   var ssDest = SpreadsheetApp.openById(U3A.WORDPRESS_PROGRAM_FILE_ID)
 
@@ -184,12 +190,12 @@ function courseDetailToSheet(course, outputTo) {
 
   // Calculate 2 friday's prior to course start date.
 
-  // const prevFridayDate = new Date(getPreviousFridayTimestamp(course.startDate))
+  // const prevFridayDate = new Date(wbLib.getPreviousFridayTimestamp(course.startDate))
   // const twoWeeksAgoFriday = new Date(prevFridayDate.setDate(prevFridayDate.getDate() - 7))
 
   cell =
     'Enrolments close - ' +
-    fmtDateTimeLocal(new Date(course.closeDate), {
+    wbLib.fmtDateTimeLocal(new Date(course.closeDate), {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -210,7 +216,7 @@ function courseDetailToSheet(course, outputTo) {
  */
 function selectedRegistrationEmails() {
   // Selection must be memberName(s)
-  const res = metaSelected(1)
+  const res = wbLib.metaSelected(1)
   if (!res) {
     return
   }
@@ -234,7 +240,7 @@ function selectedRegistrationEmails() {
  */
 function createSessionAdviceEmail() {
   // Must select Summary(column1) and just one column
-  const res = metaSelected(1, 'CalendarImport')
+  const res = wbLib.metaSelected(1, 'CalendarImport')
   if (!res) {
     return
   }
@@ -242,7 +248,7 @@ function createSessionAdviceEmail() {
 
   //get CalendarImport sheet
   const sessionData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CalendarImport').getDataRange().getValues()
-  const allSessions = getJsonArrayFromData(sessionData)
+  const allSessions = wbLib.getJsonArrayFromData(sessionData)
 
   //filter to just the session selected. Note header and zero based index means offset -2
   selectedSessions = allSessions.filter(
@@ -252,14 +258,14 @@ function createSessionAdviceEmail() {
 
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
   //get memberDetail sheet
   const memberData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MemberDetails').getDataRange().getValues()
-  const allMembers = getJsonArrayFromData(memberData)
+  const allMembers = wbLib.getJsonArrayFromData(memberData)
   //get the Database of who is attending which course (columns B:C)
   const db = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Database')
   const dbData = db.getRange('B12:C' + db.getLastRow()).getValues()
-  const allDB = getJsonArrayFromData(dbData)
+  const allDB = wbLib.getJsonArrayFromData(dbData)
 
   selectedSessions.forEach((thisSession) => {
     const courseDateTime = formatU3ADateTime(new Date(thisSession.startDateTime))
@@ -310,11 +316,11 @@ function createSessionAdviceEmail() {
     }
 
     // get the draft Gmail message to use as a template
-    const emailTemplate = getGmailTemplateFromDrafts_(templateEmailSubject)
+    const emailTemplate = wbLib.getGmailTemplateFromDrafts(templateEmailSubject)
 
     try {
-      const msgObj = fillinTemplateFromObject(emailTemplate.message, fieldReplacer)
-      const msgText = stripHTML(msgObj.text)
+      const msgObj = wbLib.fillinTemplateFromObject(emailTemplate.message, fieldReplacer)
+      const msgText = wbLib.stripHTML(msgObj.text)
       GmailApp.createDraft(recipient, subject, msgText, {
         htmlBody: msgObj.html,
         bcc: bccEmails,
@@ -406,11 +412,11 @@ function createCourseDetails() {
 
   //get memberDetail sheet
   const memberData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MemberDetails').getDataRange().getValues()
-  const allMembers = getJsonArrayFromData(memberData)
+  const allMembers = wbLib.getJsonArrayFromData(memberData)
 
   //get CalendarImport sheet and sort it by summary and startDate
   const sessionData = ss.getSheetByName('CalendarImport').getDataRange().getValues()
-  const allSessions = getJsonArrayFromData(sessionData)
+  const allSessions = wbLib.getJsonArrayFromData(sessionData)
   const sortedSessions = allSessions.sort((a, b) => {
     if (a.summary !== b.summary) {
       return a.summary < b.summary ? -1 : 1
@@ -452,21 +458,21 @@ function createCourseDetails() {
 
     // Dates
     const startDateTime = new Date(sortedSessions[index].startDateTime)
-    const startDate = googleSheetDateTime(startDateTime)
+    const startDate = wbLib.googleSheetDateTime(startDateTime)
 
     const endDateTime = new Date(sortedSessions[index].endDateTime)
 
-    const closeDate = new Date(getPreviousFridayTimestamp(startDateTime))
+    const closeDate = new Date(wbLib.getPreviousFridayTimestamp(startDateTime))
     //Used to be 2 weeks prior - code here just incase we revert
     // const closeDate = new Date(prevFridayDate.setDate(prevFridayDate.getDate() - 7))
 
     // Times
-    const displayStartTime = fmtDateTimeLocal(startDateTime, {
+    const displayStartTime = wbLib.fmtDateTimeLocal(startDateTime, {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     })
-    const displayEndTime = fmtDateTimeLocal(endDateTime, {
+    const displayEndTime = wbLib.fmtDateTimeLocal(endDateTime, {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
@@ -559,7 +565,7 @@ function updateWordpressEnrolmentForm() {
 
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   // add each course to the form
   /**
@@ -598,7 +604,7 @@ function updateWordpressEnrolmentForm() {
     const item = googleForm.addCheckboxItem().setTitle(courseTitle).setHelpText(courseHelpText)
     const choice = item.createChoice(courseStatus)
     item.setChoices([choice])
-    showToast(`Processed: ${thisCourse.title} as ${courseStatus}`, 1)
+    wbLib.showToast(`Processed: ${thisCourse.title} as ${courseStatus}`, 1)
   })
 
   //make a new filename with todays date/time
@@ -624,14 +630,14 @@ function enrolResponseToCSV(responseSheet) {
 
   //get courseDetail sheet
   const courseData = ss.getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
   //get just the title from  the Course Details sheet and sort alphabetically
   const courseTitles = allCourses.map((course) => course.title).sort()
   const numberOfCourses = courseTitles.length
 
   //get the response data from spreadsheet attached to the enrolment form
   const responseData = responseSheet.getDataRange().getValues()
-  const allResponses = getJsonArrayFromData(responseData)
+  const allResponses = wbLib.getJsonArrayFromData(responseData)
 
   //reduce the Form Response data to an array of ["name", "email", [course titles enroled in]]
   const registrationItems = allResponses.reduce((acc, resp) => {
@@ -705,10 +711,10 @@ function enrolResponseToCSV(responseSheet) {
  */
 function makeEnrolmentCSV() {
   const ss = SpreadsheetApp.getActiveSpreadsheet()
-  const ssFolder = getMyFolder(ss)
+  const ssFolder = wbLib.getMyFolder(ss)
   const ssFolderName = ssFolder.getName()
   let formFileArray
-  formFileArray = findFilesInFolder(ssFolder, "mimeType = 'application/vnd.google-apps.form'")
+  formFileArray = wbLib.findFilesInFolder(ssFolder, "mimeType = 'application/vnd.google-apps.form'")
 
   if (formFileArray.length === 0) {
     throw new Error(`Can't find a Google Form in the "${ssFolderName}" folder`)
@@ -718,7 +724,7 @@ function makeEnrolmentCSV() {
     const formFileName = promptForFormName()
     if (formFileName) {
       const searchFor = `mimeType = 'application/vnd.google-apps.form' and title contains '${formFileName}'`
-      formFileArray = findFilesInFolder(ssFolder, searchFor)
+      formFileArray = wbLib.findFilesInFolder(ssFolder, searchFor)
       if (formFileArray.length != 1) {
         throw new Error(`Can't find a Form '${formFileName}' in the "${ssFolderName}" folder`)
       }
@@ -726,7 +732,7 @@ function makeEnrolmentCSV() {
   }
   const formFileId = formFileArray[0].getId()
   const googleForm = FormApp.openById(formFileId)
-  const formResponseSheet = getFormDestinationSheet(googleForm)
+  const formResponseSheet = wbLib.getFormDestinationSheet(googleForm)
 
   enrolResponseToCSV(formResponseSheet)
   return
@@ -742,7 +748,7 @@ function buildDB() {
 
   //get RegistrationMaster sheet
   const registrationData = ss.getSheetByName('RegistrationMaster').getDataRange().getValues()
-  const allRegistrations = getJsonArrayFromData(registrationData)
+  const allRegistrations = wbLib.getJsonArrayFromData(registrationData)
 
   //reduce the registration data to an array of ["name", courseTitle"]
   const dbItems = allRegistrations.reduce((acc, resp) => {
@@ -794,7 +800,7 @@ function updateCourseStatus(title, status) {
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails')
   const courseData = sheet.getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   thisCourse = allCourses.find((course) => course.title === title)
   const courseDateTime = formatU3ADateTime(new Date(thisCourse.startDate))
@@ -828,7 +834,7 @@ function updateCourseStatus(title, status) {
     }
   }
 
-  const titleRow = getRowFromColumnSearch(courseData, 'title', title)
+  const titleRow = wbLib.getRowFromColumnSearch(courseData, 'title', title)
   const columnNumber = courseData[0].indexOf('courseStatus')
   sheet.getRange(titleRow, columnNumber + 1, 1, 1).setValue(status)
 }
@@ -840,7 +846,7 @@ function updateCourseStatus(title, status) {
 function getCourseList() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails')
   const courseData = sheet.getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   const courseTitles = allCourses.map((course) => course.title)
 

@@ -1,6 +1,14 @@
 /**
  *
- * Version 4.2021.0 (Ready for another year)
+ * Version 5.2022.4 - Move to a single code base, managed in github
+ *
+ * Refactor to use westborn library (wbLib) of common functions
+ * Refactor changes for using a standalone webapp for enrolment and not using google forms
+ *
+ */
+
+/**
+ *
  *
  * GLOBAL constants for U3A
  * Change these to match the column names you are using for email
@@ -103,5 +111,5 @@ function btn_print_courseRegister() {
 function changeCourseStatus({ courseTitle, status }) {
   console.log('changeCourseStatus', courseTitle, status)
   updateCourseStatus(courseTitle, status)
-  showToast(`Updated "${courseTitle}" to ${status}`, 5)
+  wbLib.showToast(`Updated "${courseTitle}" to ${status}`, 5)
 }

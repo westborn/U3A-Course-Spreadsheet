@@ -28,16 +28,13 @@ const getZoomUserId = () => {
 }
 
 function selectedZoomSessions() {
-  const res = metaSelected(1, 'CalendarImport')
+  const res = wbLib.metaSelected(1, 'CalendarImport')
   if (!res) {
     return
   }
   const { sheetSelected, rangeSelected, numRowsSelected } = res
   const headers = sheetSelected.getRange(1, 1, 1, sheetSelected.getLastColumn()).getValues().shift()
-  const data = sheetSelected
-    .getRange(rangeSelected)
-    .offset(0, 0, numRowsSelected, headers.length)
-    .getValues()
+  const data = sheetSelected.getRange(rangeSelected).offset(0, 0, numRowsSelected, headers.length).getValues()
 
   const meetingOptions = {
     type: 2,
@@ -57,7 +54,7 @@ function selectedZoomSessions() {
     meetingOptions.topic = row[headers.indexOf('summary')]
     const start_time = row[headers.indexOf('startDateTime')]
     const end_time = row[headers.indexOf('endDateTime')]
-    const duration = dateDiffMinutes(end_time, start_time)
+    const duration = wbLib.dateDiffMinutes(end_time, start_time)
     meetingOptions.duration = duration
 
     s = start_time

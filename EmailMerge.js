@@ -3,7 +3,7 @@
  */
 function selectedHTMLRegistrationEmails() {
   // Must select memberName(s) in one column
-  const res = metaSelected(1)
+  const res = wbLib.metaSelected(1)
   if (!res) {
     return
   }
@@ -43,12 +43,12 @@ function draftEnrolleeEmail(templateEmailSubject = 'TEMPLATE - Course Registrati
 
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   //get the Database of who is attending which course (columns B:C)
   const db = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Database')
   const dbData = db.getRange('B12:C' + db.getLastRow()).getValues()
-  const allDB = getJsonArrayFromData(dbData)
+  const allDB = wbLib.getJsonArrayFromData(dbData)
 
   // filter the Database for just this members courses
   const memberIsGoingTo = allDB
@@ -97,7 +97,7 @@ function draftEnrolleeEmail(templateEmailSubject = 'TEMPLATE - Course Registrati
 
   //get memberDetail sheet
   const memberData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MemberDetails').getDataRange().getValues()
-  const allMembers = getJsonArrayFromData(memberData)
+  const allMembers = wbLib.getJsonArrayFromData(memberData)
 
   //find this member in the MemberDetails
   const thisMember = allMembers.find(
@@ -111,11 +111,11 @@ function draftEnrolleeEmail(templateEmailSubject = 'TEMPLATE - Course Registrati
   }
 
   // get the draft Gmail message to use as a template
-  const emailTemplate = getGmailTemplateFromDrafts_(templateEmailSubject)
+  const emailTemplate = wbLib.getGmailTemplateFromDrafts(templateEmailSubject)
 
   try {
-    const msgObj = fillinTemplateFromObject(emailTemplate.message, fieldReplacer)
-    const msgText = stripHTML(msgObj.text)
+    const msgObj = wbLib.fillinTemplateFromObject(emailTemplate.message, fieldReplacer)
+    const msgText = wbLib.stripHTML(msgObj.text)
     GmailApp.createDraft(thisMember.email, emailFields.subject, msgText, {
       htmlBody: msgObj.html,
       // bcc: 'a.bbc@email.com',

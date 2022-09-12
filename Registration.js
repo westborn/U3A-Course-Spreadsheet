@@ -3,7 +3,7 @@
  */
 function selectedAttendanceRegister() {
   // Must select  from the CourseDetails sheet
-  const res = metaSelected(1, 'CourseDetails')
+  const res = wbLib.metaSelected(1, 'CourseDetails')
   if (!res) {
     return
   }
@@ -29,7 +29,7 @@ function createAttendanceRegister(
 ) {
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = getJsonArrayFromData(courseData)
+  const allCourses = wbLib.getJsonArrayFromData(courseData)
 
   const thisCourse = allCourses.find(
     // (course) => course.summary.toString().toLowerCase() === courseSummary.toString().toLowerCase() Stop Dups
@@ -45,12 +45,12 @@ function createAttendanceRegister(
 
   //get memberDetail sheet
   const memberData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MemberDetails').getDataRange().getValues()
-  const allMembers = getJsonArrayFromData(memberData)
+  const allMembers = wbLib.getJsonArrayFromData(memberData)
 
   const allMemberText = allMembers.map((member) => `${member.surname}\t${member.firstName}\n`)
 
-  const myFolder = getMyFolder(SpreadsheetApp.getActiveSpreadsheet())
-  const folder = checkIfFolderExistElseCreate(myFolder, 'Registration Lists')
+  const myFolder = wbLib.getMyFolder(SpreadsheetApp.getActiveSpreadsheet())
+  const folder = wbLib.checkIfFolderExistElseCreate(myFolder, 'Registration Lists')
 
   const fileList = folder.getFilesByName(fileName)
   if (fileList.hasNext()) {
