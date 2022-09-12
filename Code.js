@@ -113,3 +113,7 @@ function changeCourseStatus({ courseTitle, status }) {
   updateCourseStatus(courseTitle, status)
   wbLib.showToast(`Updated "${courseTitle}" to ${status}`, 5)
 }
+
+function getCalendarList() {
+  return wbLib.getCalendarList()
+}
