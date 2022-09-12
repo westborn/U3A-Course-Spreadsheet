@@ -537,234 +537,224 @@ function createCourseDetails() {
   return
 }
 
+// /**
+//  * Update existing Google Form with details of all courses in "CourseDetails" sheet
+//  *
+//  */
+// function updateWordpressEnrolmentForm() {
+//   //find the existing Google Form
+//   const googleForm = FormApp.openById(U3A.ENROLMENT_GOOGLE_FORM_ID)
+//   // const googleForm = FormApp.openById('1oTkGQNzNHn3cDKkU5ez0_c1vM4Y4zr1GS4CUHgzUGDE')
+
+//   // get the response spreadsheet ID, folder and filename
+//   const responseSpreadsheetId = googleForm.getDestinationId()
+//   const responseFolder = DriveApp.getFileById(responseSpreadsheetId).getParents().next()
+//   const responseFilename = DriveApp.getFileById(responseSpreadsheetId).getName()
+
+//   // Disconnect the response spreadsheet from its form
+//   googleForm.removeDestination()
+
+//   // delete all existing CheckBox Questions ready to add all courses
+//   var items = googleForm.getItems()
+//   items.forEach((item) => {
+//     if (item.getType() == 'CHECKBOX') {
+//       // console.log('Deleting... ', item.getTitle())
+//       googleForm.deleteItem(item)
+//     }
+//   })
+
+//   //get courseDetail sheet
+//   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
+//   const allCourses = wbLib.getJsonArrayFromData(courseData)
+
+//   // add each course to the form
+//   /**
+//    * TODO
+//    * what other text needs to be in the helptext?
+//    * update when close date reached or count >= max (IF MAX > 0)
+//    *
+//    *
+//    */
+//   allCourses.forEach((thisCourse) => {
+//     const courseTitle = thisCourse.title != '' ? thisCourse.title : thisCourse.summary
+//     const courseDateTime = formatU3ADateTime(new Date(thisCourse.startDate))
+//     const closeDate = formatU3ADate(new Date(thisCourse.closeDate))
+//     const courseStatus = thisCourse.courseStatus
+
+//     var courseHelpText = ''
+//     switch (courseStatus) {
+//       case 'Enrol?':
+//         courseHelpText = `Course commences: ${courseDateTime}`
+//         courseHelpText += `\n${thisCourse.location}`
+//         courseHelpText += thisCourse.closeDate !== '' ? `\nEnrolments close: ${closeDate}` : ''
+//         break
+//       case 'Waitlist?':
+//         courseHelpText = `Course is fully booked - you can wait list and we'll notify you if a vacancy happens`
+//         break
+//       case 'Closed!':
+//         courseHelpText = `Course is now closed - no additional registrations can be accepted`
+//         break
+//       case 'Cancelled':
+//         courseHelpText = `Course has been cancelled - no registrations can be accepted`
+//         break
+//       default:
+//         courseHelpText = `Course is now closed! - no additional registrations can be accepted`
+//     }
+
+//     const item = googleForm.addCheckboxItem().setTitle(courseTitle).setHelpText(courseHelpText)
+//     const choice = item.createChoice(courseStatus)
+//     item.setChoices([choice])
+//     wbLib.showToast(`Processed: ${thisCourse.title} as ${courseStatus}`, 1)
+//   })
+
+//   //make a new filename with todays date/time
+//   const newResponseFilename = `${responseFilename} (Archive - ${formatU3ADateTime(Date.now())})`
+//   //copy the existing response sheet to an archive copy
+//   DriveApp.getFileById(responseSpreadsheetId).makeCopy(newResponseFilename, responseFolder)
+
+//   // remove all existing responses from the form
+//   googleForm.deleteAllResponses()
+
+//   //set up existing sheet to take responses again
+//   googleForm.setDestination(FormApp.DestinationType.SPREADSHEET, responseSpreadsheetId)
+// }
+
+// /**
+//  * Take the contents of a form's responses and write the transformed values to the "CSV" sheet
+//  *
+//  * @param {sheet Object} responseSheet from the spreadsheet attached to the form
+//  */
+// function enrolResponseToCSV(responseSheet) {
+//   const ss = SpreadsheetApp.getActiveSpreadsheet()
+//   const sheet = ss.getSheetByName('CSV')
+
+//   //get courseDetail sheet
+//   const courseData = ss.getSheetByName('CourseDetails').getDataRange().getValues()
+//   const allCourses = wbLib.getJsonArrayFromData(courseData)
+//   //get just the title from  the Course Details sheet and sort alphabetically
+//   const courseTitles = allCourses.map((course) => course.title).sort()
+//   const numberOfCourses = courseTitles.length
+
+//   //get the response data from spreadsheet attached to the enrolment form
+//   const responseData = responseSheet.getDataRange().getValues()
+//   const allResponses = wbLib.getJsonArrayFromData(responseData)
+
+//   //reduce the Form Response data to an array of ["name", "email", [course titles enroled in]]
+//   const registrationItems = allResponses.reduce((acc, resp) => {
+//     //get the column name keys from the response line
+//     const cols = Object.keys(resp)
+//     // ignore column names that aren't course titles
+//     // include columns that have enrol? checked
+//     const courses = cols.filter((col) => {
+//       if (!col.match(/^(Timestamp|Name|Email address)$/) && resp[col] === 'Enrol?') {
+//         return true
+//       }
+//     })
+//     //if there are any courses add them to our result
+//     if (courses) {
+//       acc.push([resp['Name'], resp['Email address'], courses])
+//     }
+//     return acc
+//   }, [])
+
+//   // clear the CSV sheet and write the headings
+//   sheet.clear()
+//   sheet.appendRow(['name', 'email', ...courseTitles, 'nameCheck', 'emailCheck'])
+
+//   //format course columns with diagonal headings and narrow width
+//   sheet.setColumnWidth(1, 150)
+//   sheet.setColumnWidth(2, 150)
+//   courseTitles.forEach((_course, idx) => {
+//     sheet.setColumnWidth(idx + 3, 100)
+//     sheet.getRange(1, idx + 3).setTextRotation(60)
+//   })
+//   sheet.setColumnWidth(numberOfCourses + 3, 120)
+//   sheet.setColumnWidth(numberOfCourses + 4, 120)
+
+//   //loop thru form response rows
+//   //  then thru array of courses in the response
+//   //    output name, email, [each course]
+//   result = []
+//   registrationItems.forEach(([name, email, courses]) => {
+//     const thisRow = Array(numberOfCourses).fill('')
+//     courses.forEach((course) => {
+//       // get the column index of the enroled course
+//       enroledIndex = courseTitles.indexOf(course)
+//       if (enroledIndex > -1) {
+//         thisRow[enroledIndex] = '1'
+//       }
+//     })
+//     result.push([name.trim(), email.trim(), ...thisRow])
+//   })
+//   //Write the data back to the sheet
+//   if (result) {
+//     sheet.getRange(sheet.getLastRow() + 1, 1, result.length, result[0].length).setValues(result)
+
+//     //set a formula in the last 2 columns as error checking
+//     const formulas = [
+//       'ArrayFormula(index(Members,match(TRUE, exact(A2,memberName),0),1))',
+//       'ArrayFormula(index(Members,match(TRUE, exact(B2,memberEmail),0),1))',
+//     ]
+//     sheet.getRange(2, numberOfCourses + 3, 1, 2).setFormulas([formulas])
+//     const fillDownRange = sheet.getRange(2, numberOfCourses + 3, sheet.getLastRow() - 1)
+//     sheet.getRange(2, numberOfCourses + 3, 1, 2).copyTo(fillDownRange)
+//   }
+// }
+
+// /**
+//  * Look for a Google Form in the current folder
+//  * > 1 form file - ask user
+//  * no form files - throw error
+//  *
+//  * get the current response sheet
+//  * pass it to the function that decodes it and writes to 'CSV' sheet
+//  */
+// function makeEnrolmentCSV() {
+//   const ss = SpreadsheetApp.getActiveSpreadsheet()
+//   const ssFolder = wbLib.getMyFolder(ss)
+//   const ssFolderName = ssFolder.getName()
+//   let formFileArray
+//   formFileArray = wbLib.findFilesInFolder(ssFolder, "mimeType = 'application/vnd.google-apps.form'")
+
+//   if (formFileArray.length === 0) {
+//     throw new Error(`Can't find a Google Form in the "${ssFolderName}" folder`)
+//   }
+
+//   if (formFileArray.length > 1) {
+//     const formFileName = promptForFormName()
+//     if (formFileName) {
+//       const searchFor = `mimeType = 'application/vnd.google-apps.form' and title contains '${formFileName}'`
+//       formFileArray = wbLib.findFilesInFolder(ssFolder, searchFor)
+//       if (formFileArray.length != 1) {
+//         throw new Error(`Can't find a Form '${formFileName}' in the "${ssFolderName}" folder`)
+//       }
+//     }
+//   }
+//   const formFileId = formFileArray[0].getId()
+//   const googleForm = FormApp.openById(formFileId)
+//   const formResponseSheet = wbLib.getFormDestinationSheet(googleForm)
+
+//   enrolResponseToCSV(formResponseSheet)
+//   return
+// }
+
 /**
- * Update existing Google Form with details of all courses in "CourseDetails" sheet
- *
- */
-function updateWordpressEnrolmentForm() {
-  //find the existing Google Form
-  const googleForm = FormApp.openById(U3A.ENROLMENT_GOOGLE_FORM_ID)
-  // const googleForm = FormApp.openById('1oTkGQNzNHn3cDKkU5ez0_c1vM4Y4zr1GS4CUHgzUGDE')
-
-  // get the response spreadsheet ID, folder and filename
-  const responseSpreadsheetId = googleForm.getDestinationId()
-  const responseFolder = DriveApp.getFileById(responseSpreadsheetId).getParents().next()
-  const responseFilename = DriveApp.getFileById(responseSpreadsheetId).getName()
-
-  // Disconnect the response spreadsheet from its form
-  googleForm.removeDestination()
-
-  // delete all existing CheckBox Questions ready to add all courses
-  var items = googleForm.getItems()
-  items.forEach((item) => {
-    if (item.getType() == 'CHECKBOX') {
-      // console.log('Deleting... ', item.getTitle())
-      googleForm.deleteItem(item)
-    }
-  })
-
-  //get courseDetail sheet
-  const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = wbLib.getJsonArrayFromData(courseData)
-
-  // add each course to the form
-  /**
-   * TODO
-   * what other text needs to be in the helptext?
-   * update when close date reached or count >= max (IF MAX > 0)
-   *
-   *
-   */
-  allCourses.forEach((thisCourse) => {
-    const courseTitle = thisCourse.title != '' ? thisCourse.title : thisCourse.summary
-    const courseDateTime = formatU3ADateTime(new Date(thisCourse.startDate))
-    const closeDate = formatU3ADate(new Date(thisCourse.closeDate))
-    const courseStatus = thisCourse.courseStatus
-
-    var courseHelpText = ''
-    switch (courseStatus) {
-      case 'Enrol?':
-        courseHelpText = `Course commences: ${courseDateTime}`
-        courseHelpText += `\n${thisCourse.location}`
-        courseHelpText += thisCourse.closeDate !== '' ? `\nEnrolments close: ${closeDate}` : ''
-        break
-      case 'Waitlist?':
-        courseHelpText = `Course is fully booked - you can wait list and we'll notify you if a vacancy happens`
-        break
-      case 'Closed!':
-        courseHelpText = `Course is now closed - no additional registrations can be accepted`
-        break
-      case 'Cancelled':
-        courseHelpText = `Course has been cancelled - no registrations can be accepted`
-        break
-      default:
-        courseHelpText = `Course is now closed! - no additional registrations can be accepted`
-    }
-
-    const item = googleForm.addCheckboxItem().setTitle(courseTitle).setHelpText(courseHelpText)
-    const choice = item.createChoice(courseStatus)
-    item.setChoices([choice])
-    wbLib.showToast(`Processed: ${thisCourse.title} as ${courseStatus}`, 1)
-  })
-
-  //make a new filename with todays date/time
-  const newResponseFilename = `${responseFilename} (Archive - ${formatU3ADateTime(Date.now())})`
-  //copy the existing response sheet to an archive copy
-  DriveApp.getFileById(responseSpreadsheetId).makeCopy(newResponseFilename, responseFolder)
-
-  // remove all existing responses from the form
-  googleForm.deleteAllResponses()
-
-  //set up existing sheet to take responses again
-  googleForm.setDestination(FormApp.DestinationType.SPREADSHEET, responseSpreadsheetId)
-}
-
-/**
- * Take the contents of a form's responses and write the transformed values to the "CSV" sheet
- *
- * @param {sheet Object} responseSheet from the spreadsheet attached to the form
- */
-function enrolResponseToCSV(responseSheet) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet()
-  const sheet = ss.getSheetByName('CSV')
-
-  //get courseDetail sheet
-  const courseData = ss.getSheetByName('CourseDetails').getDataRange().getValues()
-  const allCourses = wbLib.getJsonArrayFromData(courseData)
-  //get just the title from  the Course Details sheet and sort alphabetically
-  const courseTitles = allCourses.map((course) => course.title).sort()
-  const numberOfCourses = courseTitles.length
-
-  //get the response data from spreadsheet attached to the enrolment form
-  const responseData = responseSheet.getDataRange().getValues()
-  const allResponses = wbLib.getJsonArrayFromData(responseData)
-
-  //reduce the Form Response data to an array of ["name", "email", [course titles enroled in]]
-  const registrationItems = allResponses.reduce((acc, resp) => {
-    //get the column name keys from the response line
-    const cols = Object.keys(resp)
-    // ignore column names that aren't course titles
-    // include columns that have enrol? checked
-    const courses = cols.filter((col) => {
-      if (!col.match(/^(Timestamp|Name|Email address)$/) && resp[col] === 'Enrol?') {
-        return true
-      }
-    })
-    //if there are any courses add them to our result
-    if (courses) {
-      acc.push([resp['Name'], resp['Email address'], courses])
-    }
-    return acc
-  }, [])
-
-  // clear the CSV sheet and write the headings
-  sheet.clear()
-  sheet.appendRow(['name', 'email', ...courseTitles, 'nameCheck', 'emailCheck'])
-
-  //format course columns with diagonal headings and narrow width
-  sheet.setColumnWidth(1, 150)
-  sheet.setColumnWidth(2, 150)
-  courseTitles.forEach((_course, idx) => {
-    sheet.setColumnWidth(idx + 3, 100)
-    sheet.getRange(1, idx + 3).setTextRotation(60)
-  })
-  sheet.setColumnWidth(numberOfCourses + 3, 120)
-  sheet.setColumnWidth(numberOfCourses + 4, 120)
-
-  //loop thru form response rows
-  //  then thru array of courses in the response
-  //    output name, email, [each course]
-  result = []
-  registrationItems.forEach(([name, email, courses]) => {
-    const thisRow = Array(numberOfCourses).fill('')
-    courses.forEach((course) => {
-      // get the column index of the enroled course
-      enroledIndex = courseTitles.indexOf(course)
-      if (enroledIndex > -1) {
-        thisRow[enroledIndex] = '1'
-      }
-    })
-    result.push([name.trim(), email.trim(), ...thisRow])
-  })
-  //Write the data back to the sheet
-  if (result) {
-    sheet.getRange(sheet.getLastRow() + 1, 1, result.length, result[0].length).setValues(result)
-
-    //set a formula in the last 2 columns as error checking
-    const formulas = [
-      'ArrayFormula(index(Members,match(TRUE, exact(A2,memberName),0),1))',
-      'ArrayFormula(index(Members,match(TRUE, exact(B2,memberEmail),0),1))',
-    ]
-    sheet.getRange(2, numberOfCourses + 3, 1, 2).setFormulas([formulas])
-    const fillDownRange = sheet.getRange(2, numberOfCourses + 3, sheet.getLastRow() - 1)
-    sheet.getRange(2, numberOfCourses + 3, 1, 2).copyTo(fillDownRange)
-  }
-}
-
-/**
- * Look for a Google Form in the current folder
- * > 1 form file - ask user
- * no form files - throw error
- *
- * get the current response sheet
- * pass it to the function that decodes it and writes to 'CSV' sheet
- */
-function makeEnrolmentCSV() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet()
-  const ssFolder = wbLib.getMyFolder(ss)
-  const ssFolderName = ssFolder.getName()
-  let formFileArray
-  formFileArray = wbLib.findFilesInFolder(ssFolder, "mimeType = 'application/vnd.google-apps.form'")
-
-  if (formFileArray.length === 0) {
-    throw new Error(`Can't find a Google Form in the "${ssFolderName}" folder`)
-  }
-
-  if (formFileArray.length > 1) {
-    const formFileName = promptForFormName()
-    if (formFileName) {
-      const searchFor = `mimeType = 'application/vnd.google-apps.form' and title contains '${formFileName}'`
-      formFileArray = wbLib.findFilesInFolder(ssFolder, searchFor)
-      if (formFileArray.length != 1) {
-        throw new Error(`Can't find a Form '${formFileName}' in the "${ssFolderName}" folder`)
-      }
-    }
-  }
-  const formFileId = formFileArray[0].getId()
-  const googleForm = FormApp.openById(formFileId)
-  const formResponseSheet = wbLib.getFormDestinationSheet(googleForm)
-
-  enrolResponseToCSV(formResponseSheet)
-  return
-}
-
-/**
- * Get data from the "CSV" and populate the "Database"
- * For all the columns that have a 1 - write the details to the database columns
+ * Get data from the "OnlineEnrolments" and populate the "Database"
+ * For all the columns that have a status of 'Enrol?' - write the details to the database columns
  * Recalculate the 2 pivot tables after the database is written back to the sheet
  */
 function buildDB() {
   const ss = SpreadsheetApp.getActiveSpreadsheet()
 
-  //get RegistrationMaster sheet
-  const registrationData = ss.getSheetByName('RegistrationMaster').getDataRange().getValues()
-  const allRegistrations = wbLib.getJsonArrayFromData(registrationData)
+  //get RnlineEnrolmentMaster sheet
+  const onlineEnrolmentsData = ss.getSheetByName('OnlineEnrolments').getDataRange().getValues()
+  const allOnlineEnrolments = wbLib.getJsonArrayFromData(onlineEnrolmentsData)
 
-  //reduce the registration data to an array of ["name", courseTitle"]
-  const dbItems = allRegistrations.reduce((acc, resp) => {
-    //get the column name keys from the response line
-    const cols = Object.keys(resp)
-    // ignore column names that aren't course titles
-    // include columns that have "1" in the column
-    const courses = cols.filter((col) => {
-      if (!col.match(/^(name|email|count)$/) && resp[col] != '') {
-        return true
-      }
-    })
-    //if there are any courses add them to our database
-    courses.map((course) => {
-      acc.push([resp['name'], course])
-    })
+  //reduce the OnlineEnrolments data to an array of ["name", courseTitle"]
+  const dbItems = allOnlineEnrolments.reduce((acc, resp) => {
+    if (resp.status === 'Enrol?') {
+      acc.push([resp.name, resp.title])
+    }
     return acc
   }, [])
 
@@ -791,48 +781,48 @@ function buildDB() {
 }
 
 /**
- * Update Google Form and "CourseDetails" sheet to reflect a new "courseStatus"
+ * Update "CourseDetails" sheet to reflect a new "courseStatus"
  *
  */
 function updateCourseStatus(title, status) {
-  //find the existing Google Form
-  const googleForm = FormApp.openById(U3A.ENROLMENT_GOOGLE_FORM_ID)
-
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails')
   const courseData = sheet.getDataRange().getValues()
   const allCourses = wbLib.getJsonArrayFromData(courseData)
 
-  thisCourse = allCourses.find((course) => course.title === title)
-  const courseDateTime = formatU3ADateTime(new Date(thisCourse.startDate))
-  const closeDate = formatU3ADate(new Date(thisCourse.closeDate))
-  var courseHelpText = ''
-  switch (status) {
-    case 'Enrol?':
-      courseHelpText = `Course commences: ${courseDateTime}`
-      courseHelpText += `\n${thisCourse.location}`
-      courseHelpText += thisCourse.closeDate !== '' ? `\nEnrolments close: ${closeDate}` : ''
-      break
-    case 'Waitlist?':
-      courseHelpText = `Course is fully booked - you can wait list and we'll notify you if a vacancy happens`
-      break
-    case 'Closed!':
-      courseHelpText = `Course is now closed - no additional registrations can be accepted`
-      break
-    case 'Cancelled':
-      courseHelpText = `Course has been cancelled - no registrations can be accepted`
-      break
-    default:
-      courseHelpText = `Course is now closed! - no additional registrations can be accepted`
-  }
+  // //find the existing Google Form
+  // const googleForm = FormApp.openById(U3A.ENROLMENT_GOOGLE_FORM_ID)
 
-  const formItems = googleForm.getItems(FormApp.ItemType.CHECKBOX)
-  for (const item of formItems) {
-    if (item.getTitle() === title) {
-      const checkboxItem = item.asCheckboxItem()
-      checkboxItem.setHelpText(courseHelpText)
-      checkboxItem.setChoices([checkboxItem.createChoice(status)])
-    }
-  }
+  // thisCourse = allCourses.find((course) => course.title === title)
+  // const courseDateTime = formatU3ADateTime(new Date(thisCourse.startDate))
+  // const closeDate = formatU3ADate(new Date(thisCourse.closeDate))
+  // var courseHelpText = ''
+  // switch (status) {
+  //   case 'Enrol?':
+  //     courseHelpText = `Course commences: ${courseDateTime}`
+  //     courseHelpText += `\n${thisCourse.location}`
+  //     courseHelpText += thisCourse.closeDate !== '' ? `\nEnrolments close: ${closeDate}` : ''
+  //     break
+  //   case 'Waitlist?':
+  //     courseHelpText = `Course is fully booked - you can wait list and we'll notify you if a vacancy happens`
+  //     break
+  //   case 'Closed!':
+  //     courseHelpText = `Course is now closed - no additional registrations can be accepted`
+  //     break
+  //   case 'Cancelled':
+  //     courseHelpText = `Course has been cancelled - no registrations can be accepted`
+  //     break
+  //   default:
+  //     courseHelpText = `Course is now closed! - no additional registrations can be accepted`
+  // }
+
+  // const formItems = googleForm.getItems(FormApp.ItemType.CHECKBOX)
+  // for (const item of formItems) {
+  //   if (item.getTitle() === title) {
+  //     const checkboxItem = item.asCheckboxItem()
+  //     checkboxItem.setHelpText(courseHelpText)
+  //     checkboxItem.setChoices([checkboxItem.createChoice(status)])
+  //   }
+  // }
 
   const titleRow = wbLib.getRowFromColumnSearch(courseData, 'title', title)
   const columnNumber = courseData[0].indexOf('courseStatus')
