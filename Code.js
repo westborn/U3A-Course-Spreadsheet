@@ -54,7 +54,12 @@ function onOpen() {
         .addItem('Create Database from OnlineEnrolments', 'buildDB')
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Wordpress Actions').addItem('Create Course Program', 'makeCourseDetailForWordPress'))
+    .addSubMenu(
+      ui
+        .createMenu('Wordpress Actions')
+        .addItem('Create Course Program', 'makeCourseDetailForWordPress')
+        .addItem('Open Course Program', 'makeCourseDetailOpenForWordPress')
+    )
     .addSeparator()
     .addSubMenu(ui.createMenu('Other Actions').addItem('I&R Enrolment Sheet', 'selectedAttendanceRegister'))
     .addSeparator()

@@ -128,7 +128,7 @@ function print_courseRegister() {
  * the data comes from the "CourseDetails" sheet
  *
  */
-function makeCourseDetailForWordPress() {
+function makeCourseDetailOpenForWordPress() {
   //get courseDetail sheet
   const courseData = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('CourseDetails').getDataRange().getValues()
   const allCourses = wbLib.getJsonArrayFromData(courseData)
@@ -147,6 +147,29 @@ function makeCourseDetailForWordPress() {
     var outputStart = sheet.getRange(index + 1, 1)
     courseDetailToSheet(course, outputStart)
   })
+  // setBorder(top, left, bottom, right, vertical, horizontal, color, style)
+  sheet.getDataRange().setBorder(true, null, true, null, null, true, "black", SpreadsheetApp.BorderStyle.SOLID);
+  return sheet
+}
+
+/**
+ * Same as function above but change the links to be active when the courses are open
+ */
+function makeCourseDetailForWordPress() {
+  const sheet = makeCourseDetailOpenForWordPress()
+  // remove the URL links from column "C" by make new col D/ copy C data / paste valuesonly to D / delete C
+  sheet.insertColumnAfter(3)
+  sheet.getRange("C:C").copyTo(sheet.getRange("D:D"), { contentsOnly: true });
+  sheet.deleteColumn(3)
+  const colC = sheet.getRange("C:C")
+  var style = SpreadsheetApp.newTextStyle()
+    .setFontSize(11)
+    .setUnderline(false)
+    .setForegroundColor("#000")
+    .build();
+  colC.setTextStyle(style);
+  // setBorder(top, left, bottom, right, vertical, horizontal, color, style)
+  sheet.getDataRange().setBorder(true, null, true, null, null, true, "black", SpreadsheetApp.BorderStyle.SOLID);
 }
 
 /**
@@ -192,7 +215,6 @@ function courseDetailToSheet(course, outputTo) {
 
   // const prevFridayDate = new Date(wbLib.getPreviousFridayTimestamp(course.startDate))
   // const twoWeeksAgoFriday = new Date(prevFridayDate.setDate(prevFridayDate.getDate() - 7))
-
   cell =
     'Enrolments close - ' +
     wbLib.fmtDateTimeLocal(new Date(course.closeDate), {
@@ -201,7 +223,7 @@ function courseDetailToSheet(course, outputTo) {
       day: 'numeric',
     })
   rich = SpreadsheetApp.newRichTextValue()
-  rich.setText(cell).setTextStyle(bodyFontSize).setLinkUrl('https://U3ABermagui.com.au/enrolment')
+  rich.setText(cell).setTextStyle(bodyFontSize).setLinkUrl('https://enrol.U3ABermagui.com.au/')
   outputTo
     .offset(0, 2)
     .setRichTextValue(rich.build())
