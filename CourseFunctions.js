@@ -20,15 +20,15 @@ function makeHyperlink() {
   const ss = SpreadsheetApp.getActiveSpreadsheet()
   const sheet = ss.getSheetByName('Attendance')
 
-  var emailData = sheet.getRange('E14:E60').getValues()
+  var emailData = sheet.getRange('E14:E69').getValues()
   //flatten array and remove dups and drop empty strings
   var noDups = [...new Set(emailData.flat())].filter(String)
   //  Logger.log(noDups)
   //  Logger.log(noDups.length)
   sheet.getRange('C5:C6').clearContent()
 
-  var hyperValOutlook = `=HYPERLINK("mailto:noreply@gmail.com?bcc=${noDups.join(';')}","Outlook Link")`
-  var hyperValMac = `=HYPERLINK("mailto:noreply@gmail.com?bcc=${noDups.join(',')}","MacMail Link")`
+  var hyperValOutlook = `=HYPERLINK("mailto:david@u3abermagui.com.au?bcc=${noDups.join(';')}","Outlook Link")`
+  var hyperValMac = `=HYPERLINK("mailto:david@u3abermagui.com.au?bcc=${noDups.join(',')}","MacMail Link")`
 
   sheet.getRange('C5').setValue(hyperValOutlook)
   sheet.getRange('C5').setShowHyperlink(true)
@@ -148,7 +148,7 @@ function makeCourseDetailOpenForWordPress() {
     courseDetailToSheet(course, outputStart)
   })
   // setBorder(top, left, bottom, right, vertical, horizontal, color, style)
-  sheet.getDataRange().setBorder(true, null, true, null, null, true, "black", SpreadsheetApp.BorderStyle.SOLID);
+  sheet.getDataRange().setBorder(true, null, true, null, null, true, 'black', SpreadsheetApp.BorderStyle.SOLID)
   return sheet
 }
 
@@ -159,17 +159,13 @@ function makeCourseDetailForWordPress() {
   const sheet = makeCourseDetailOpenForWordPress()
   // remove the URL links from column "C" by make new col D/ copy C data / paste valuesonly to D / delete C
   sheet.insertColumnAfter(3)
-  sheet.getRange("C:C").copyTo(sheet.getRange("D:D"), { contentsOnly: true });
+  sheet.getRange('C:C').copyTo(sheet.getRange('D:D'), { contentsOnly: true })
   sheet.deleteColumn(3)
-  const colC = sheet.getRange("C:C")
-  var style = SpreadsheetApp.newTextStyle()
-    .setFontSize(11)
-    .setUnderline(false)
-    .setForegroundColor("#000")
-    .build();
-  colC.setTextStyle(style);
+  const colC = sheet.getRange('C:C')
+  var style = SpreadsheetApp.newTextStyle().setFontSize(11).setUnderline(false).setForegroundColor('#000').build()
+  colC.setTextStyle(style)
   // setBorder(top, left, bottom, right, vertical, horizontal, color, style)
-  sheet.getDataRange().setBorder(true, null, true, null, null, true, "black", SpreadsheetApp.BorderStyle.SOLID);
+  sheet.getDataRange().setBorder(true, null, true, null, null, true, 'black', SpreadsheetApp.BorderStyle.SOLID)
 }
 
 /**
@@ -501,12 +497,6 @@ function createCourseDetails() {
     })
     const time = `${displayStartTime} - ${displayEndTime}`.replace(/:00 /g, '')
 
-    const member =
-      allMembers.find(
-        (member) =>
-          sortedSessions[index].contact.toString().toLowerCase() === member.memberName.toString().toLowerCase()
-      ) || {}
-
     // Check to see if "Cost:" is in description and get the amount - else Zero
     let cost = getWordAfter(sortedSessions[index].description, 'Cost:')
     var regex = /[+-]?\d+(\.\d+)?/g
@@ -525,6 +515,8 @@ function createCourseDetails() {
     const numberOfSessions = (dates.match(/,/g) || []).length + 1
     const courseCost = cost * numberOfSessions
 
+    const thisPresenter = getPresenter(sortedSessions[index].contact)
+
     return {
       summary: sortedSessions[index].summary,
       title,
@@ -540,8 +532,8 @@ function createCourseDetails() {
       max: getWordAfter(sortedSessions[index].description, 'Max:'),
       cost,
       courseCost,
-      phone: member.mobile || '',
-      email: member.email || '',
+      phone: thisPresenter.phone || '',
+      email: thisPresenter.email || '',
       contact: sortedSessions[index].contact || 'No Contact',
       numberCurrentlyEnroled: '0',
       courseStatus: 'Enrol?',
