@@ -73,7 +73,7 @@ function print_attendance() {
 
   var subject = courseTitle + ' - Attendance Sheet'
   var body =
-    '\n\nAttached is the registration sheet for the course.\n\nPlease let us know if there are any changes required.\n\n\nU3A Team'
+    '\n\nAttached is the attendance sheet for the course.\n\nPlease let us know if there are any changes required.\n\nPlease remember to mark off attendees and place the completed sheet in the U3A cupboard post box at the Community Centre,\n\nU3A Team'
 
   var resp = GmailApp.createDraft(recipient, subject, body, {
     attachments: [pdfFile.getAs(MimeType.PDF)],
@@ -322,6 +322,7 @@ function createSessionAdviceEmail() {
       startDateTime: courseDateTime,
       courseLocation: thisSession.location,
       contact: contactString,
+      courseDescription: thisSession.description,
     }
 
     let templateEmailSubject = 'TEMPLATE - U3A Class Advice'

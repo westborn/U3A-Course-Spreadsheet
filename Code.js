@@ -17,13 +17,6 @@
 var U3A = {
   // file is - "U3A Current Program - Wordpress"
   WORDPRESS_PROGRAM_FILE_ID: '1svCAoJKW7FsnerJSPhLkzuXEcicdksA5fcV2UfaztR8',
-
-  // file is - "Term-3 Enrolments"
-  ENROLMENT_GOOGLE_FORM_ID: '1plXH296qqV72yV92Zr5S7J6CIyxwqpdy-tZAsisIlTo',
-  // file is - "Term-2 Enrolments"
-  // ENROLMENT_GOOGLE_FORM_ID: '195xFDf-YBu7aLYa7lRbBf2V3VvSrm8WWLcFINT3lfIQ',
-  // file is - "Term-1 Enrolments"
-  // ENROLMENT_GOOGLE_FORM_ID: '1ALDrXrF5t9BLidEoIXSmqHM79iTRERUB4guQxO2jBko',
 }
 
 /**
@@ -32,7 +25,12 @@ var U3A = {
 function onOpen() {
   var ui = SpreadsheetApp.getUi()
   ui.createMenu('U3A Menu')
-    .addSubMenu(ui.createMenu('CourseDetails').addItem('Change Course Status', 'loadCourseStatusSidebar'))
+    .addSubMenu(
+      ui
+        .createMenu('CourseDetails')
+        .addItem('Manage Course CONFIG', 'loadConfigManagement')
+        .addItem('Change Course Status', 'loadCourseStatusSidebar')
+    )
     .addSeparator()
     .addSubMenu(
       ui
