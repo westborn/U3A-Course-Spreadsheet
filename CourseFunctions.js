@@ -514,7 +514,7 @@ function createCourseDetails() {
     const dates = sortedSessions[index].datesScheduled
 
     const numberOfSessions = (dates.match(/,/g) || []).length + 1
-    const courseCost = cost * numberOfSessions
+    const courseCost = cost > 3 ? cost * numberOfSessions : 0
 
     const thisPresenter = getPresenter(sortedSessions[index].contact)
 
